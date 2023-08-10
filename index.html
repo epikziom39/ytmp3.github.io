@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Downloader</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background-color: #222;
+    color: white;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  label {
+    margin-bottom: 10px;
+  }
+  button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  .progress-container {
+    width: 100%;
+    max-width: 300px;
+    height: 20px;
+    background-color: #444;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+    display: none;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0;
+    background-color: #3498db;
+    transition: width 0.2s;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>YouTube Downloader</h1>
+  <label for="url">Enter YouTube Video URL:</label>
+  <input type="text" id="url" placeholder="YouTube URL" />
+  <label for="format">Select Format:</label>
+  <select id="format">
+    <option value="mp3">MP3</option>
+    <option value="wav">WAV</option>
+  </select>
+  <button id="downloadBtn">Download</button>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+</div>
+<script>
+  const downloadBtn = document.getElementById("downloadBtn");
+  const progressBarContainer = document.querySelector(".progress-container");
+  const progressBar = document.getElementById("progressBar");
+
+  downloadBtn.addEventListener("click", async () => {
+    const url = document.getElementById("url").value;
+    const format = document.getElementById("format").value;
+    const apiKey = "JEBACLISEK65GEJS";
+    
+    if (!url) {
+      alert("Please enter a valid YouTube URL.");
+      return;
+    }
+
+    progressBar.style.width = "0%";
+    progressBarContainer.style.display = "block";
+
+    try {
+      const response = await fetch('http://130.162.51.204:42069/downlink', {  // Change to your API domain
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apikey: apiKey,
+          url: url,
+          type: format,
+        }),
+      });
+
+      if (response.status === 200) {
+        const blob = await response.blob();
+        const disposition = response.headers.get('content-disposition');
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+        const filename = (matches != null && matches[1]) ? matches[1].replace(/['"]/g, '') : 'download';
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${filename}.${format}`;
+        link.click();
+      } else {
+        alert("An error occurred while downloading the video.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while downloading the video.");
+    } finally {
+      progressBarContainer.style.display = "none";
+    }
+  });
+</script>
+</body>
+</html>
